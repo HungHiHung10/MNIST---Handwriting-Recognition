@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import os
 
 app = Flask(__name__)
-model = tf.keras.models.load_model('mnist_model_optimized.h5')
+model = tf.keras.models.load_model('model.h5')
 
 @app.route('/')
 def index():

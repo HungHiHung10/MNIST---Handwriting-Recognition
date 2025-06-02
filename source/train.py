@@ -70,5 +70,5 @@ for i in range(5):
     plt.imsave(f'sample_images/test_{i}.png', x_test[i].reshape(28, 28), cmap='gray')
 
 # Lưu mô hình
-model.save('mnist_model_optimized.h5')
+model.save('model.h5')
 print("✅ Mô hình đã được lưu thành công vào 'mnist_model_optimized.h5'")
