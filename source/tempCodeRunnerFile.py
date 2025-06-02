@@ -8,38 +8,47 @@ from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 import os
 
-app = Flask(__name__)
-model = tf.keras.models.load_model('D:/MNIST - Handwriting Recognition/source/model.h5')
+#* Flask: Python web framework
+#   - Input: resquest 
+#   - Output: response (jsonify)
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+source_folder = os.path.dirname(os.path.abspath(__file__))
+Directory = os.path.dirname(source_folder)
+
+
+app = Flask(__name__,
+            template_folder=os.path.join(Directory, 'template'),
+            static_folder=os.path.join(Directory, 'static'))
+
+print(os.path.join(source_folder, 'model.h5'))
+model = tf.keras.models.load_model(os.path.join(source_folder, 'model.h5'))
 
 @app.route('/')
 def index():
-    return render_template('D:/MNIST - Handwriting Recognition/templates/index.html')
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Nhận ảnh từ canvas
     data_url = request.json['image']
     header, encoded = data_url.split(',', 1)
     img_bytes = io.BytesIO(base64.b64decode(encoded))
-    img = Image.open(img_bytes).convert('L')
+    image = Image.open(img_bytes).convert('L')
 
-    # Đảo màu (MNIST: nền đen, chữ trắng)
-    img = ImageOps.invert(img)
-    img = img.resize((28, 28), Image.Resampling.LANCZOS)
-
-    # Tiền xử lý
-    arr = np.array(img).astype('float32') / 255.0
+    image = ImageOps.invert(image)
+    image = image.resize((28, 28), Image.Resampling.LANCZOS)
+    arr = np.array(image).astype('float32') / 255.0
     arr = gaussian_filter(arr, sigma=0.5)  # Giảm sigma để giữ chi tiết
     arr = arr.reshape(1, 28, 28, 1)
 
-    # Lưu ảnh đầu vào để kiểm tra
-    os.makedirs('input_images', exist_ok=True)
-    plt.imsave(f'input_images/input_{len(os.listdir("input_images"))}.png', arr.reshape(28, 28), cmap='gray')
 
-    # Dự đoán
-    pred = model.predict(arr, verbose=0)
-    digit = int(np.argmax(pred, axis=1)[0])
-    probabilities = [float(p) for p in pred[0]]  # Chuyển xác suất thành danh sách
+
+    os.makedirs(os.path.join(Directory, 'assets', 'histories'), exist_ok=True)
+    plt.imsave(os.path.join(Directory, 'assets', 'histories', f'{len(os.listdir(os.path.join(Directory, "assets", "histories")))}.png'), arr.reshape(28, 28), cmap='gray')
+    
+    prediction = model.predict(arr, verbose=0)
+    digit = int(np.argmax(prediction, axis=1)[0])
+    probabilities = [float(p) for p in prediction[0]]  # Chuyển xác suất thành danh sách
 
     return jsonify({'digit': digit, 'probabilities': probabilities})
 
