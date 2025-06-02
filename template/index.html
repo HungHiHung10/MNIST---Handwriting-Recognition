@@ -1,151 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MNIST Digit Recognition</title>
-    <link rel="stylesheet" href="static/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-
-<body>
-    <div class="container">
-        <h1>MNIST</h1>
-        <canvas id="canvas" width="280" height="280"></canvas>
-        <div class="controls">
-            <button id="clearBtn">Delete</button>
-            <button id="predictBtn">Predict</button>
-        </div>
-        <div id="result">
-            <h3>Kết quả:</h3>
-            <p id="predictedDigit">Chưa có dự đoán</p>
-            <h3>Xác suất:</h3>
-            <canvas id="probChart" height="150"></canvas>
-            <ul id="probabilities"></ul>
-        </div>
-    </div>
-
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const clearBtn = document.getElementById('clearBtn');
-        const predictBtn = document.getElementById('predictBtn');
-        let isDrawing = false;
-
-        // Cấu hình canvas
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 20;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Xử lý sự kiện chuột
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        // Xử lý sự kiện cảm ứng
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startDrawing(e.touches[0]);
-        });
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            draw(e.touches[0]);
-        });
-        canvas.addEventListener('touchend', stopDrawing);
-
-        function startDrawing(e) {
-            isDrawing = true;
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-            ctx.beginPath();
-        }
-
-        // Khởi tạo biểu đồ xác suất
-        const probChart = new Chart(document.getElementById('probChart'), {
-            type: 'bar',
-            data: {
-                labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-                datasets: [{
-                    label: 'Xác suất (%)',
-                    data: Array(10).fill(0),
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        title: { display: true, text: 'Xác suất (%)' }
-                    },
-                    x: {
-                        title: { display: true, text: 'Chữ số' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-
-        // Xóa canvas
-        clearBtn.addEventListener('click', () => {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('predictedDigit').textContent = 'Chưa có dự đoán';
-            document.getElementById('probabilities').innerHTML = '';
-            probChart.data.datasets[0].data = Array(10).fill(0);
-            probChart.update();
-        });
-
-        // Gửi ảnh tới server
-        predictBtn.addEventListener('click', () => {
-            const dataURL = canvas.toDataURL('image/png');
-            fetch('/predict', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: dataURL })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                        return;
-                    }
-                    document.getElementById('predictedDigit').textContent = `Chữ số dự đoán: ${data.digit}`;
-                    const probsList = document.getElementById('probabilities');
-                    probsList.innerHTML = '';
-                    // data.probabilities.forEach((prob, i) => {
-                    //     const li = document.createElement('li');
-                    //     li.textContent = `Chữ số ${i}: ${(prob * 100).toFixed(2)}%`;
-                    //     probsList.appendChild(li);
-                    // });
-                    // Cập nhật biểu đồ
-                    probChart.data.datasets[0].data = data.probabilities.map(p => p * 100);
-                    probChart.update();
-                });
-        });
-    </script>
-</body>
-
-</html> -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -153,37 +5,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MNIST Digit Recognition</title>
-    <!-- <link rel="stylesheet" href="D:/MNIST - Handwriting Recognition/statics/style.css"> -->
-    <link rel="stylesheet" href="{{ url_for('statics', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <style>
-    html {   
+    html {
         overflow-y: hidden !important;
     }
+
     .container {
         display: flex;
     }
+
     .title {
         height: 50%;
     }
+
     #result {
         padding-left: 0px;
         padding-right: 0px;
     }
+
     .result {
         height: 50%;
         width: 50%;
     }
+
     .predict {
         padding: 0px;
         margin-top: 0px;
         margin-bottom: 5px;
     }
+
     .chart {
         margin-top: 13px !important;
     }
+
+    .controls button {
+        margin: 5px;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    #predictBtn {
+        background-color: #3498db;
+        color: white;
+    }
+
+    #probabilities {
+        list-style: none;
+        padding: 0;
+    }
+
+    #probabilities li {
+        margin: 5px 0;
+    }
 </style>
+
 <body>
     <div class="container">
         <div class="title">
@@ -201,137 +79,10 @@
             <p class="predict" id="predictedDigit">Chưa có dự đoán</p>
             <h3 class="predict">Xác suất:</h3>
             <canvas id="probChart" height="280px" class="chart"></canvas>
-            <ul id="probabilities"></ul>
-        </div>  
+            <!-- <ul id="probabilities"></ul> -->
+        </div>
     </div>
-
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const deleteBtn = document.getElementById('deleteBtn');
-        const eraseBtn = document.getElementById('eraseBtn');
-        const predictBtn = document.getElementById('predictBtn');
-        let isDrawing = false;
-        let isErasing = false;
-
-        // Cấu hình canvas
-        ctx.lineWidth = 20;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'black'; // Mặc định là vẽ bằng màu đen
-
-        // Xử lý sự kiện chuột
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        // Xử lý sự kiện cảm ứng
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startDrawing(e.touches[0]);
-        });
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            draw(e.touches[0]);
-        });
-        canvas.addEventListener('touchend', stopDrawing);
-
-        function startDrawing(e) {
-            isDrawing = true;
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-            ctx.beginPath();
-        }
-
-        // Chuyển đổi chế độ vẽ/tẩy
-        eraseBtn.addEventListener('click', () => {
-            isErasing = !isErasing;
-            ctx.strokeStyle = isErasing ? 'white' : 'black';
-            eraseBtn.textContent = isErasing ? 'Draw' : 'Erase';
-            eraseBtn.style.backgroundColor = isErasing ? '#e74c3c' : '#1abc9c';
-        });
-
-        // Xóa toàn bộ canvas
-        deleteBtn.addEventListener('click', () => {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('predictedDigit').textContent = 'Chưa có dự đoán';
-            document.getElementById('probabilities').innerHTML = '';
-            probChart.data.datasets[0].data = Array(10).fill(0);
-            probChart.update();
-            // Reset chế độ tẩy
-            isErasing = false;
-            ctx.strokeStyle = 'black';
-            eraseBtn.textContent = 'Erase';
-            eraseBtn.style.backgroundColor = '#1abc9c';
-        });
-
-        // Khởi tạo biểu đồ xác suất
-        const probChart = new Chart(document.getElementById('probChart'), {
-            type: 'bar',
-            data: {
-                labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-                datasets: [{
-                    label: 'Xác suất (%)',
-                    data: Array(10).fill(0),
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        title: { display: true, text: 'Xác suất (%)' }
-                    },
-                    x: {
-                        title: { display: true, text: 'Chữ số' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-
-        paint = document.querySelector('.paint');
-
-        paint.addEventListener('mouseout', () => {
-            const dataURL = canvas.toDataURL('image/png');
-            fetch('/predict', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: dataURL })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        // alert(data.error);
-                        return;
-                    }
-                    document.getElementById('predictedDigit').textContent = `Chữ số dự đoán: ${data.digit}`;
-                    const probsList = document.getElementById('probabilities');
-                    probsList.innerHTML = '';
-                    probChart.data.datasets[0].data = data.probabilities.map(p => p * 100);
-                    probChart.update();
-                });
-        });
-    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
 </html>
